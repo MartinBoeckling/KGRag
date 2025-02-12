@@ -43,6 +43,7 @@ import multiprocessing as mp
 from gen_ai_hub.proxy.langchain.init_models import init_llm
 from constants import ai_core_client_id, ai_core_client_secret, ai_core_resource_group, ai_core_auth_url, ai_core_url
 import os
+import pickle
 
 
 def read_kg_file(file_path: Path) -> Graph:
@@ -159,7 +160,7 @@ class kg_embedding:
         self.save_path.mkdir(parents=True, exist_ok=True)
         graph_data = read_kg_file(self.data_path)
         corpus = self.kg_corpus(graph_data)
-        self.kg_sentence(corpus)
+        # self.kg_sentence(corpus, "gpt-4")
 
 
     def predicate_generation(self, path_list: str) -> list:
@@ -218,7 +219,7 @@ class kg_embedding:
             path_sequence = self.predicate_generation(walk_edges)
             walk_list.append(path_sequence)
         
-        return walk_list
+        return (id_number, walk_list)
 
     def bfs_walk_iteration(self, id_number: int) -> list:
         """
@@ -261,7 +262,7 @@ class kg_embedding:
         # extract walk sequences with edge id to generate predicates
         walk_sequence = list(map(self.predicate_generation, shortest_path_list))
         # return walkSequence list
-        return walk_sequence
+        return (id_number, walk_sequence)
 
     def kg_corpus(self, graph_data: Graph) -> None:
         """
@@ -290,10 +291,17 @@ class kg_embedding:
         pool.close()
         # build up corpus on extracted walks
         corpus = [
-            walk for entity_walks in walkPredicateList for walk in entity_walks]
+            (node_id, walk) for node_id, entity_walks in walkPredicateList for walk in entity_walks if len(walk) > 1]
+        with open(f"{self.save_path}/corpus_random.pkl", "wb") as file:
+            pickle.dump(corpus, file)
         return corpus
 
     def kg_sentence(self, corpus: list, model_name: str):
+        os.environ["AICORE_CLIENT_ID"]      = ai_core_client_id
+        os.environ["AICORE_CLIENT_SECRET"]  = ai_core_client_secret
+        os.environ["AICORE_AUTH_URL"]       = ai_core_auth_url
+        os.environ["AICORE_RESOURCE_GROUP"] = ai_core_resource_group
+        os.environ["AICORE_BASE_URL"]       = ai_core_url
         llm_model = init_llm(model_name)
         prompt_template = ChatPromptTemplate.from_template(
             """Please provide me from an extracted triple set of a Knowledge Graph a sentence. The triple set consists of one extracted random walk.
@@ -301,8 +309,8 @@ class kg_embedding:
             Please return only the constructed sentence from the following set of node and edge labels extracted from the Knowledge Graph: {triples}""")
         tasks = [prompt_template.format_prompt(triples=walk) for walk in corpus]
         with open("responses.txt", "w", encoding="utf-8") as file:
-            for _, result in llm_model.abatch_as_completed(tasks):
-                file.write(result + "\n\n")
+            for _, result in llm_model.batch_as_completed(tasks):
+                file.write(result.content + "\n\n")
 
 if __name__ == '__main__':
     # initialize the command line argparser
