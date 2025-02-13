@@ -166,3 +166,5 @@ test.py
 **/.DS_Store
 
 data/*
+
+!.gitkeep
