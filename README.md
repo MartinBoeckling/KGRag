@@ -18,6 +18,7 @@ For MetaQA, all hops (1-hop, 2-hop, and 3-hop) are relevant for evaluating our m
 To run the experiments successfully, please follow the folder structure outlined below. Ensuring the correct structure helps maintain relative path consistency in the scripts. Please run the following [bash script](start_ollama_docker.sh) to start the Ollama container necessary for the Llama 3.1 LLM as well as the Mistral LLM. Please create a **.secret** file for the OpenAI API key.
 ## Folder Structure
 In the following the folder structure of our project is visible. Please make sure to recreate the folder structure to make sure relative paths work within the script.
+```bash
 root
 ├── data
 │   ├── CRAG
@@ -39,6 +40,7 @@ root
 │   ├── vanilla_rag
 │   └── walk_retrieve
 └── prompt
+```
 ## Data Preparation
 To prepare the datasets for evaluation, we provide scripts to transform the data into the required format.
 * [Crag Triple Generation](data_preparation/metaqa_kg_prep.py): This script generates a knowledge graph (KG) based on the CRAG repository’s mock API, enabling walk retrieval over the graph.
