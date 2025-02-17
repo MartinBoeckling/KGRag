@@ -1,0 +1,1 @@
+podman run -d --replace --gpus=all -v /ceph/mboeckli/KGRag/models/ollama_model_state:/root/.ollama -p 11434:11434 --name ollama ollama/ollama 

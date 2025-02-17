@@ -41,7 +41,6 @@ from langchain.prompts import ChatPromptTemplate
 from itertools import groupby
 import multiprocessing as mp
 from gen_ai_hub.proxy.langchain.init_models import init_llm
-from constants import ai_core_client_id, ai_core_client_secret, ai_core_resource_group, ai_core_auth_url, ai_core_url
 import os
 import pickle
 
@@ -117,7 +116,7 @@ class kg_embedding:
             Trains the knowledge graph embedding model on the provided graph data.
     """
     def __init__(self, data_path: str, distance: int, max_walks: str,
-                 train: bool, chunksize: int, save_path: str, cpu_count: int,
+                 chunksize: int, save_path: str, cpu_count: int,
                  walk_strategy):
         """
         Initializes the kg_embedding class with the given parameters.
@@ -141,8 +140,6 @@ class kg_embedding:
         self.distance = distance
         # assign maximum walks to class variable
         self.max_walks = max_walks
-        # assign train to class variable
-        self.train = train
         # assign chunksize to class variable
         self.chunksize = chunksize
         # assign savepath to class variable
@@ -289,35 +286,18 @@ class kg_embedding:
         # walkPredicateList = list(pool.imap_unordered(self.walkIteration, entities, chunksize=self.chunksize))
         # close multiprocessing pool
         pool.close()
+        Graph.write_pickle(self.graph, fname=f"{self.save_path}/graph_{self.walk_strategy}_{self.distance}_{self.max_walks}.pkl")
         # build up corpus on extracted walks
         corpus = [
             (node_id, walk) for node_id, entity_walks in walkPredicateList for walk in entity_walks if len(walk) > 1]
-        with open(f"{self.save_path}/corpus_random.pkl", "wb") as file:
+        with open(f"{self.save_path}/corpus_{self.walk_strategy}_{self.distance}_{self.max_walks}.pkl", "wb") as file:
             pickle.dump(corpus, file)
         return corpus
 
-    def kg_sentence(self, corpus: list, model_name: str):
-        os.environ["AICORE_CLIENT_ID"]      = ai_core_client_id
-        os.environ["AICORE_CLIENT_SECRET"]  = ai_core_client_secret
-        os.environ["AICORE_AUTH_URL"]       = ai_core_auth_url
-        os.environ["AICORE_RESOURCE_GROUP"] = ai_core_resource_group
-        os.environ["AICORE_BASE_URL"]       = ai_core_url
-        llm_model = init_llm(model_name)
-        prompt_template = ChatPromptTemplate.from_template(
-            """Please provide me from an extracted triple set of a Knowledge Graph a sentence. The triple set consists of one extracted random walk.
-            Therefore, a logical order of the shown triples is present. Please consider this fact when constructing the sentence.
-            Please return only the constructed sentence from the following set of node and edge labels extracted from the Knowledge Graph: {triples}""")
-        tasks = [prompt_template.format_prompt(triples=walk) for walk in corpus]
-        with open("responses.txt", "w", encoding="utf-8") as file:
-            for _, result in llm_model.batch_as_completed(tasks):
-                file.write(result.content + "\n\n")
 
 if __name__ == '__main__':
     # initialize the command line argparser
     parser = argparse.ArgumentParser(description='RDF2Vec argument parameters')
-    # add train argument parser
-    parser.add_argument('-t', '--train', default=False, action='store_true',
-                        help="use parameter if Word2Vec training should be performed")
     # add path argument parser
     parser.add_argument('-p', '--path', type=str, required=True,
                         help='string value to data path')
@@ -339,6 +319,6 @@ if __name__ == '__main__':
                         help="number of CPU cores that are assigned to multiprocessing")
     # store parser arguments in args variable
     args = parser.parse_args()
-    kg_embedding(data_path=args.path, distance=args.distance, max_walks=args.walknumber, train=args.train,
+    kg_embedding(data_path=args.path, distance=args.distance, max_walks=args.walknumber,
                 chunksize=args.chunksize, save_path=args.savepath, cpu_count=args.cpu_count,
                 walk_strategy=args.walk_strategy)

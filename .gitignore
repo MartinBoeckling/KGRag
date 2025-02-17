@@ -168,3 +168,5 @@ test.py
 data/*
 
 !.gitkeep
+
+models/ollama_model_state/*

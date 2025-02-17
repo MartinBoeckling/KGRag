@@ -5,7 +5,8 @@ import pandas as pd
 import sqlite3
 import bz2
 from sqlitedict import SqliteDict
-Movie data
+
+# Movie data
 def movie_generate_triples(movies, person_data, year_data):
     triples = []
     movie_id_name = {}
@@ -173,13 +174,11 @@ for _, player_row in nba_player.iterrows():
     nba_triples.append((player_row["person_id"], "draft_number", player_row["draft_number"]))
     nba_triples.append((player_row["person_id"], "greatest_75_flag", player_row["greatest_75_flag"]))
 
-nba_games = pd.read_csv("data/CRAG/pandas_data/game.csv")
-print(nba_games.columns)
-print(nba_games)
+nba_df = pd.DataFrame(nba_triples, columns=["subject", "predicate", "object"])
+nba_df.to_csv("data/CRAG/triple_data/nba_triple.csv", index=False)
 
-
-Music triples
-Artist DB
+# Music triples
+# Artist DB
 with open("data/CRAG/crag-mock-api-main/cragkg/music/artist_dict_simplified.pickle", "rb") as file:
     artist_db = pickle.load(file)
 
@@ -269,7 +268,7 @@ for key, value in open_kg.items():
 open_kg_df = pd.DataFrame(open_triples, columns=["subject", "predicate", "object"])
 open_kg_df.to_csv("data/CRAG/triple_data/open_kg.csv", index=False)
 
-Finance
+# Finance
 finance_triples = []
 # Company-Symbol
 company_names = pd.read_csv("data/CRAG/crag-mock-api-main/cragkg/finance/company_name.dict")
