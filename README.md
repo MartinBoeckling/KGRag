@@ -43,7 +43,7 @@ root
 ```
 ## Data Preparation
 To prepare the datasets for evaluation, we provide scripts to transform the data into the required format.
-* [Crag Triple Generation](data_preparation/metaqa_kg_prep.py): This script generates a knowledge graph (KG) based on the CRAG repository’s mock API, enabling walk retrieval over the graph.
+* [Crag Triple Generation](data_preparation/crag_triple_generation.py): This script generates a knowledge graph (KG) based on the CRAG repository’s mock API, enabling walk retrieval over the graph.
 * [MetaQA KG Preparation](data_preparation/metaqa_kg_prep.py): This script transforms the MetaQA KG into the format required by our code.
 ## Models
 This repository includes the implementations of both our Walk&Retrieve method and baseline approaches. For external baselines, follow their respective GitHub repositories:
