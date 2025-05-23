@@ -1,4 +1,7 @@
-# KGRag
+<p align="center">
+  <img src="logo.jpeg" alt="WalkRetrieve logo" width="200">
+</p>
+
 This repository contains the relevant code for the paper **Walk&Retrieve: Simple Yet Effective Zero-Shot Retrieval-Augmented Generation via Knowledge Graph Walks**. 
 
 If you encounter any issues or have questions about the implementation, feel free to open an issue in this repository.
